@@ -1,6 +1,6 @@
 "use client"
 const DEMO_MODE = false
-const DEMO_RESULT = { score: 80 }
+
 
 import { useEffect, useRef, useState } from "react"
 import { motion, useMotionValue, useTransform, animate } from "framer-motion"
@@ -26,7 +26,7 @@ export default function RiskReveal() {
         once: true,
         onEnter: () => {
           const finalScore = DEMO_MODE
-  ? DEMO_RESULT.score
+  ? ({ score: 80 }).score
   : Math.floor(60 + Math.random() * 30)
 
           animate(motionScore, finalScore, {

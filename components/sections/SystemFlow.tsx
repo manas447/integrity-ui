@@ -3,9 +3,6 @@
 import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import gsap from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-
-gsap.registerPlugin(ScrollTrigger)
 
 const modules = [
   "Temporal Consistency",
@@ -21,32 +18,38 @@ export default function SystemFlow() {
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from(".flow-module", {
-        opacity: 0,
-        y: 40,
-        stagger: 0.3,
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top 70%",
-          end: "bottom 30%",
-          scrub: true
-        }
-      })
+  if (typeof window === "undefined") return
 
-      ScrollTrigger.create({
+  const ctx = gsap.context(() => {
+    const { ScrollTrigger } = require("gsap/ScrollTrigger")
+    gsap.registerPlugin(ScrollTrigger)
+
+    gsap.from(".flow-module", {
+      opacity: 0,
+      y: 40,
+      stagger: 0.3,
+      scrollTrigger: {
         trigger: containerRef.current,
-        start: "top bottom",
-        end: "bottom top",
-        scrub: true,
-        onUpdate: (self) => {
-          setProgress(self.progress)
-        }
-      })
-    }, containerRef)
+        start: "top 70%",
+        end: "bottom 30%",
+        scrub: true
+      }
+    })
 
-    return () => ctx.revert()
-  }, [])
+    ScrollTrigger.create({
+      trigger: containerRef.current,
+      start: "top bottom",
+      end: "bottom top",
+      scrub: true,
+      onUpdate: (self: any) => {
+        setProgress(self.progress)
+      }
+    })
+  }, containerRef)
+
+  return () => ctx.revert()
+}, [])
+
 
   return (
     <section

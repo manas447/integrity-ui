@@ -5,9 +5,6 @@ const DEMO_RESULT = { signals: [] }
 import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import gsap from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-
-gsap.registerPlugin(ScrollTrigger)
 
 const signals = [
   { name: "Temporal Consistency", weight: 0.22 },
@@ -23,25 +20,41 @@ export default function SignalDashboard() {
   const [values, setValues] = useState<number[]>(
     Array(signals.length).fill(0)
   )
+  const [progress, setProgress] = useState<number>(0)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      ScrollTrigger.create({
+  if (typeof window === "undefined") return
+
+  const ctx = gsap.context(() => {
+    const { ScrollTrigger } = require("gsap/ScrollTrigger")
+    gsap.registerPlugin(ScrollTrigger)
+
+    gsap.from(".flow-module", {
+      opacity: 0,
+      y: 40,
+      stagger: 0.3,
+      scrollTrigger: {
         trigger: containerRef.current,
         start: "top 70%",
-        once: true,
-        onEnter: () => {
-          const generated = DEMO_MODE
-  ? DEMO_RESULT.signals
-  : signals.map(() => Math.floor(50 + Math.random() * 50))
+        end: "bottom 30%",
+        scrub: true
+      }
+    })
 
-          setValues(generated)
-        }
-      })
-    }, containerRef)
+    ScrollTrigger.create({
+      trigger: containerRef.current,
+      start: "top bottom",
+      end: "bottom top",
+      scrub: true,
+      onUpdate: (self: any) => {
+        setProgress(self.progress)
+      }
+    })
+  }, containerRef)
 
-    return () => ctx.revert()
-  }, [])
+  return () => ctx.revert()
+}, [])
+
 
   return (
     <section

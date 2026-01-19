@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Integrity UI — Forensic Media Verification System
 
-## Getting Started
+An interactive, scroll-driven frontend that simulates a multi-signal AI pipeline for detecting synthetic and manipulated media. Built to demonstrate explainable AI, human-in-the-loop escalation, and forensic signal fusion in a cinematic, system-style interface.
 
-First, run the development server:
+## Live Demo
+> https://integrity-ui.vercel.app  
+(Deploy on Vercel for public access)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Problem
+Trust in digital media is eroding due to the rise of deepfakes and synthetic content. Most detection tools provide a binary result without explaining *why* a piece of media is flagged.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Solution
+Integrity UI visualizes media verification as a **multi-stage forensic system**:
+- Media Intake & Processing
+- Multi-Signal Analysis Pipeline
+- Explainable Signal Breakdown
+- Risk Scoring & Human Review Escalation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The goal is not just classification — but **transparent decision support**.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## System Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+User Input (Image/Video)
+│
+▼
+Media Intake Layer
+(Upload + Analysis Simulation)
+│
+▼
+System Flow Engine
+(Scroll-Driven AI Core + Modules)
+│
+▼
+Signal Dashboard
+(Weighted Forensic Signals)
+│
+▼
+Risk Score Engine
+(Threshold Logic)
+│
+▼
+Human Review Escalation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tech Stack
+- **Next.js 16 (App Router)**
+- **TypeScript**
+- **Tailwind CSS**
+- **Framer Motion** — UI motion & state transitions
+- **GSAP + ScrollTrigger** — scroll-driven system logic
+- **Lenis** — smooth scrolling
+- **Vercel** — deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Key Features
+- Scroll-driven AI pipeline visualization
+- Explainable forensic signal dashboard
+- Deterministic demo mode for live presentations
+- Human-in-the-loop escalation logic
+- Fully responsive, system-style UI
+
+---
+
+## Demo Mode
+To ensure stable results during presentations, the system supports deterministic output.
+Edit:
+lib/demo.ts
+
+cpp
+Copy code
+Toggle:
+```ts
+export const DEMO_MODE = true
+Local Development
+bash
+Copy code
+pnpm install
+pnpm devOpen:
+http://localhost:3000
+
+Future Work
+
+Backend API for real deepfake detection models
+
+Model ensemble integration (CNN + Vision Transformer)
+
+Evidence heatmaps on facial landmarks
+
+Dataset-based confidence calibration
+
+
+

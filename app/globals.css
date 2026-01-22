@@ -40,4 +40,102 @@ body {
 
 .reveal-text:hover > .clip-hidden {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+}/* === SIGNAL ORBIT SYSTEM === */
+
+.orbit-container {
+  --animation-duration: 6s;
+  --circle-bg: #0b0b0b;
+  --ellipse-perimeter: 314;
+  --line-length: 6;
+  --line-dash: calc(var(--ellipse-perimeter) - var(--line-length));
+
+  width: 600px;
+  height: 400px;
+  position: relative;
 }
+
+/* SVG */
+.orbit-container svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Background Oval */
+.orbit-oval {
+  fill: none;
+  stroke: rgba(124,124,255,0.2);
+  stroke-width: 0.6;
+}
+
+/* Moving Energy Line */
+.orbit-line {
+  fill: none;
+  stroke: rgb(124,124,255);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: var(--line-length) var(--line-dash);
+  animation: orbitMove var(--animation-duration) linear infinite;
+}
+
+/* Energy Path Animation */
+@keyframes orbitMove {
+  0%   { stroke-dashoffset: -10; }
+  20%  { stroke-dashoffset: -60; }
+  40%  { stroke-dashoffset: -120; }
+  60%  { stroke-dashoffset: -190; }
+  80%  { stroke-dashoffset: -260; }
+  100% { stroke-dashoffset: -320; }
+}
+
+/* Nodes */
+.orbit-node {
+  position: absolute;
+  translate: -50% -50%;
+  width: 90px;
+  height: 90px;
+  background: #050505;
+  border: 2px solid #333;
+  border-radius: 50%;
+  color: rgb(124,124,255);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  animation: pulse var(--animation-duration) linear infinite;
+}
+
+/* Positions */
+.orbit-node:nth-of-type(1) { top: 15%; left: 30%; animation-delay: 0s; }
+.orbit-node:nth-of-type(2) { top: 15%; left: 70%; animation-delay: 1s; }
+.orbit-node:nth-of-type(3) { top: 50%; left: 98%; animation-delay: 2s; }
+.orbit-node:nth-of-type(4) { top: 85%; left: 70%; animation-delay: 3s; }
+.orbit-node:nth-of-type(5) { top: 85%; left: 30%; animation-delay: 4s; }
+.orbit-node:nth-of-type(6) { top: 50%; left: 2%;  animation-delay: 5s; }
+
+/* Pulse Effect */
+@keyframes pulse {
+  0%, 10% {
+    scale: 1;
+    border-color: #222;
+    box-shadow: none;
+    opacity: 0.6;
+  }
+
+  15% {
+    scale: 1.3;
+    border-color: rgb(124,124,255);
+    box-shadow: 0 0 25px rgba(124,124,255,0.8);
+    opacity: 1;
+  }
+
+  25% {
+    scale: 1;
+    border-color: #222;
+    box-shadow: none;
+    opacity: 0.6;
+  }
+}
+

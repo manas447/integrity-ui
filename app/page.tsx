@@ -8,6 +8,7 @@ import SignalDashboard from "../components/sections/SignalDashboard"
 import RiskReveal from "../components/sections/RiskReveal"
 import Loader from "../components/layout/Loader"
 import TextReveal from "../components/sections/TextReveal"
+import SignalOrbit from "../components/sections/SignalOrbit"
 
 export default function Home() {
   const [loaded, setLoaded] = useState(false)
@@ -21,6 +22,7 @@ export default function Home() {
           <Hero />
           <MediaIntake />
           <SystemFlow />
+          <SignalOrbit />
           <TextReveal />
           <SignalDashboard />
           <RiskReveal />

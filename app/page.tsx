@@ -1,19 +1,32 @@
+"use client"
+
+import { useState } from "react"
 import Hero from "../components/sections/Hero"
 import MediaIntake from "../components/sections/MediaIntake"
 import SystemFlow from "../components/sections/SystemFlow"
 import SignalDashboard from "../components/sections/SignalDashboard"
 import RiskReveal from "../components/sections/RiskReveal"
-
+import Loader from "../components/layout/Loader"
+import TextReveal from "../components/sections/TextReveal"
 
 export default function Home() {
+  const [loaded, setLoaded] = useState(false)
+
   return (
-    <main>
-      <Hero />
-      <MediaIntake />
-      <SystemFlow />
-      <SignalDashboard />
-      <RiskReveal />
-    </main>
+    <>
+      {!loaded && <Loader onDone={() => setLoaded(true)} />}
+
+      {loaded && (
+        <main>
+          <Hero />
+          <MediaIntake />
+          <SystemFlow />
+          <TextReveal />
+          <SignalDashboard />
+          <RiskReveal />
+        </main>
+      )}
+    </>
   )
 }
 

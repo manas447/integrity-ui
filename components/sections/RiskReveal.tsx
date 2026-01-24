@@ -1,108 +1,72 @@
 "use client"
-const DEMO_MODE = false
 
+import { motion } from "framer-motion"
 
-import { useEffect, useRef, useState } from "react"
-import { motion, useMotionValue, useTransform, animate } from "framer-motion"
-import gsap from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-
-gsap.registerPlugin(ScrollTrigger)
+const verdict = {
+  result: "FAKE",
+  probabilityReal: 0.000,
+  tier0: {
+    captureLikelihood: 0.7,
+    survivability: "HIGH",
+    derived: false,
+    notes: "over_smooth_motion"
+  }
+}
 
 export default function RiskReveal() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [score, setScore] = useState(0)
-  const motionScore = useMotionValue(0)
-
-  const displayScore = useTransform(motionScore, (v) =>
-    Math.round(v)
-  )
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: "top 70%",
-        once: true,
-        onEnter: () => {
-          const finalScore = DEMO_MODE
-  ? ({ score: 80 }).score
-  : Math.floor(60 + Math.random() * 30)
-
-          animate(motionScore, finalScore, {
-            duration: 2,
-            ease: "easeOut"
-          })
-          setScore(finalScore)
-        }
-      })
-    }, containerRef)
-
-    return () => ctx.revert()
-  }, [motionScore])
-
-  const isHighRisk = score >= 75
+  const isFake = verdict.result === "FAKE"
 
   return (
     <section
-  id="risk-reveal"
-  ref={containerRef}
-
+      id="risk-reveal"
       className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-10"
     >
       <motion.h2
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
-        className="text-4xl md:text-5xl font-bold mb-8"
+        className="text-4xl md:text-5xl font-bold mb-10"
       >
-        Authenticity Risk Assessment
+        Final Authenticity Verdict
       </motion.h2>
 
       <div
-        className={`text-8xl md:text-9xl font-bold ${
-          isHighRisk ? "text-red-500" : "text-green-400"
+        className={`text-9xl font-bold tracking-widest ${
+          isFake ? "text-red-500" : "text-green-400"
         }`}
       >
-        <motion.span>{displayScore}</motion.span>
-        <span className="text-3xl align-top">%</span>
+        {verdict.result}
       </div>
 
-      <p className="mt-4 text-gray-400">
-        {isHighRisk
-          ? "High probability of synthetic manipulation detected"
-          : "Video appears likely authentic under current analysis"}
-      </p>
-
-      {/* Evidence Cards */}
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl">
-        {[
-          "Blink Pattern Anomaly",
-          "Identity Embedding Drift",
-          "Compression Stress Response"
-        ].map((item, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 * i }}
-            className="p-6 border border-gray-700 rounded-lg bg-[#0f0f0f]"
-          >
-            {item}
-          </motion.div>
-        ))}
+      <div className="mt-4 text-gray-400">
+        P(Real): {verdict.probabilityReal.toFixed(3)}
       </div>
 
-      {/* Human Review Flag */}
-      {isHighRisk && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="mt-10 px-6 py-3 border border-red-500 text-red-500 rounded-lg"
-        >
-          Human Review Required
-        </motion.div>
-      )}
+      {/* Tier 0 Console */}
+      <div className="mt-12 w-full max-w-3xl border border-gray-800 rounded-xl bg-[#0f0f0f] p-6 font-mono text-sm space-y-2">
+        <div>
+          <span className="text-gray-500">[TIER-0]</span>{" "}
+          Capture Likelihood: {verdict.tier0.captureLikelihood}
+        </div>
+        <div>
+          <span className="text-gray-500">[TIER-0]</span>{" "}
+          Survivability: {verdict.tier0.survivability}
+        </div>
+        <div>
+          <span className="text-gray-500">[TIER-0]</span>{" "}
+          Likely Derived: {verdict.tier0.derived.toString()}
+        </div>
+        <div>
+          <span className="text-gray-500">[TIER-0]</span>{" "}
+          Notes: {verdict.tier0.notes}
+        </div>
+      </div>
+
+      <div className="mt-8 text-gray-500 max-w-xl text-center">
+        Verdict is generated using biometric validation, physical scene
+        consistency, identity drift modeling, and ensemble depth analysis.
+        Human review is recommended for legal or high-stakes use.
+      </div>
     </section>
   )
 }

@@ -1,181 +1,181 @@
 "use client"
 
-
 import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
-import gsap from "gsap"
+import dynamic from "next/dynamic"
+import type { ForensicState } from "../layout/ForensicHead"
 
-const modules = [
-  "Temporal Consistency",
-  "Identity Stability",
-  "Biological Signals",
-  "Entropy Drift",
-  "Stress Testing",
-  "Evidence Fusion"
+const ForensicHead = dynamic(
+  () => import("../layout/ForensicHead"),
+  { ssr: false }
+)
+
+const signals = [
+  "rPPG Heart Signal",
+  "Micro-Expressions",
+  "Eye Convergence",
+  "Lighting Variance",
+  "Depth Motion",
+  "MiDaS Depth",
+  "Identity Drift",
+  "Phase Correlation",
+  "Temporal Lag"
+]
+
+const forensicLogs = [
+  "[TIER-0] Capture Likelihood: 0.70",
+  "[TIER-0] Survivability: HIGH",
+  "[rPPG] BPM: 73.7 | SNR: 1.70 | Conf: 0.34",
+  "[MicroExpr] Count: 23 | Mean: 33ms",
+  "[Depth] MiDaS INVALID | Violations: 93",
+  "[Identity] Drift: 9.59",
+  "[Phase] Corr: -0.59",
+  "[Lag] Frames: 39",
+  "[Verdict] P(real): 0.000"
 ]
 
 export default function SystemFlow() {
   const containerRef = useRef<HTMLDivElement>(null)
+
   const [progress, setProgress] = useState(0)
-const [scanned, setScanned] = useState(false)
 
-useEffect(() => {
-  if (typeof window === "undefined") return
+  const [forensic, setForensic] = useState<ForensicState>({
+    rppg: { bpm: 73.7, snr: 1.7 },
+    identity: { drift: 9.59 },
+    depth: { valid: false, violations: 93 },
+    verdict: "FAKE"
+  })
 
-  // Dynamically load ScrollTrigger to avoid SSR / Vercel issues
-  const { ScrollTrigger } = require("gsap/ScrollTrigger")
-  gsap.registerPlugin(ScrollTrigger)
+  // Scroll-based progress (UI only)
+  useEffect(() => {
+    const onScroll = () => {
+      if (!containerRef.current) return
 
-  let last = 0
+      const rect = containerRef.current.getBoundingClientRect()
+      const windowHeight = window.innerHeight
 
-  const ctx = gsap.context(() => {
-    // Module reveal animation
-    gsap.from(".flow-module", {
-      opacity: 0,
-      y: 40,
-      stagger: 0.3,
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: "top 70%",
-        end: "bottom 30%",
-        scrub: 1.5
-      }
-    })
+      const visible = Math.min(
+        1,
+        Math.max(0, 1 - rect.top / (windowHeight * 1.2))
+      )
 
-    // Progress driver (throttled to avoid 60fps React re-renders)
-    ScrollTrigger.create({
-      trigger: containerRef.current,
-      start: "top bottom",
-      end: "bottom top",
-      scrub: 1.5,
-      onUpdate: (self: any) => {
-        const p = self.progress
-        if (Math.abs(p - last) > 0.02) {
-          last = p
-          setProgress(p)
+      setProgress(visible)
+    }
+
+    window.addEventListener("scroll", onScroll)
+    onScroll()
+
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
+  // Simulated backend stream
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setForensic((prev) => ({
+        ...prev,
+        rppg: {
+          bpm: prev.rppg.bpm + (Math.random() - 0.5),
+          snr: Math.max(
+            0.5,
+            prev.rppg.snr + (Math.random() - 0.5) * 0.1
+          )
         }
-      }
-    })
-  }, containerRef)
+      }))
+    }, 1200)
 
-  return () => {
-    ScrollTrigger.getAll().forEach((t: any) => t.kill())
-    ctx.revert()
-  }
-}, [])
-
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <section
       ref={containerRef}
-      className="min-h-screen bg-black text-white flex items-center justify-center px-10"
+      className="min-h-screen bg-black text-white flex items-center justify-center"
     >
-      <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-12">
-        
-        {/* Left: AI Core */}
-<motion.div
-  className="flex items-center justify-center"
-  animate={{
-    scale: 0.8 + progress * 0.4
-  }}
-  transition={{ ease: "easeOut" }}
->
-  <svg
-    viewBox="0 0 200 200"
-    className="w-64 h-64"
-    style={{
-      transform: `rotate(${progress * 180}deg) scale(${1 + Math.sin(progress * 6) * 0.05})`
-    }}
-  >
-    {/* Outer Ring */}
-    <circle
-      cx="100"
-      cy="100"
-      r="90"
-      fill="none"
-      stroke="rgba(124,124,255,0.6)"
-      strokeWidth="2"
-      style={{
-        filter: `drop-shadow(0 0 ${10 + progress * 20}px rgba(124,124,255,0.8))`
-      }}
-    />
+      <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-16">
 
-    {/* Inner Ring */}
-    <circle
-      cx="100"
-      cy="100"
-      r="60"
-      fill="none"
-      stroke="rgba(124,124,255,0.4)"
-      strokeWidth="1"
-      strokeDasharray="4 6"
-    />
+        {/* LEFT — FORENSIC HEAD CORE */}
+        <motion.div
+          className="flex flex-col items-center justify-center"
+          animate={{
+            scale: 0.9 + progress * 0.2
+          }}
+          transition={{ ease: "easeOut" }}
+        >
+          <div className="w-full max-w-md">
+            <ForensicHead forensic={forensic} />
+          </div>
 
-    {/* Core Dot */}
-    <circle
-      cx="100"
-      cy="100"
-      r="8"
-      fill="rgb(124,124,255)"
-      style={{
-        filter: `drop-shadow(0 0 ${20 + progress * 40}px rgba(124,124,255,1))`
-      }}
-    />
+          {/* Core Status */}
+          <div className="mt-6 text-center space-y-1">
+            <p className="text-xs tracking-widest text-gray-500">
+              LIVE FORENSIC SIGNAL VISUALIZATION
+            </p>
+            <p className="text-sm text-indigo-400">
+              Face: 0 · Verdict: {forensic.verdict}
+            </p>
+            <p className="text-xs text-gray-500">
+              UI Progress: {Math.round(progress * 100)}%
+            </p>
+          </div>
+        </motion.div>
 
-    <foreignObject x="0" y="0" width="200" height="200">
-  <div className="w-full h-full flex items-center justify-center">
-    <span className="text-[10px] tracking-[0.3em] text-[rgb(124,124,255)]">
-      CORE
-    </span>
-  </div>
-</foreignObject>
+        {/* RIGHT — SIGNAL METERS + FORENSIC LOG */}
+        <div className="relative w-full">
 
-  </svg>
-</motion.div>
+          {/* Vertical Data Spine */}
+          <div className="absolute left-1 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gray-700 to-transparent" />
 
-{/* Right: Modules */}
-<div className="relative">
-  {progress > 0.45 && !scanned && (
+          {/* SIGNAL METERS */}
+          <div className="space-y-4 pl-6">
+            {signals.map((s, i) => {
+              const strength = Math.min(
+                100,
+                Math.round(progress * 100 - i * 6 + 40)
+              )
 
-  <motion.div
+              return (
+                <div
+                  key={i}
+                  className="p-4 border border-gray-700 rounded-lg bg-[#0b0b0b]"
+                >
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm tracking-wide">
+                      {s}
+                    </span>
+                    <span className="text-xs text-indigo-400">
+                      {strength}%
+                    </span>
+                  </div>
 
-    className="absolute -left-4 top-0 h-full w-1 bg-gradient-to-b from-transparent via-[rgba(124,124,255,0.4)] to-transparent"
-    initial={{ y: "-100%" }}
-    animate={{ y: "100%" }}
-    transition={{
-      duration: 2.5,
-      ease: "easeInOut",
-      onAnimationComplete: () => setScanned(true)
-    }}
-  />
-)}
+                  <div className="w-full h-2 bg-gray-800 rounded overflow-hidden">
+                    <motion.div
+                      className="h-full bg-indigo-500"
+                      initial={{ width: "0%" }}
+                      animate={{ width: `${strength}%` }}
+                      transition={{ duration: 0.6 }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
 
+          {/* FORENSIC LOG STACK */}
+          <div className="mt-10 pl-6 space-y-3">
+            {forensicLogs.map((log, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.15 }}
+                className="font-mono text-xs p-3 border border-gray-800 rounded bg-[#0f0f0f] text-gray-400"
+              >
+                {log}
+              </motion.div>
+            ))}
+          </div>
 
-<div className="relative space-y-6">
-  {/* Signal Tether Line (UPGRADE #1) */}
-  <div className="absolute left-2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gray-700 to-transparent" />
-
-{modules.map((m, i) => (
-  <div
-    key={i}
-    className="flow-module relative p-4 border border-gray-700 rounded-lg bg-[#0f0f0f] transition-all"
-    style={{
-      willChange: "transform, box-shadow"
-    }}
-  >
-    {/* Module Name */}
-    <span className="block">{m}</span>
-
-    {/* Live Progress Indicator */}
-    <span className="absolute right-3 top-3 text-[10px] tracking-widest text-gray-500">
-      {Math.round(progress * 100)}%
-    </span>
-  </div>
-))}
-
-</div>
-
-</div>
+        </div>
       </div>
     </section>
   )

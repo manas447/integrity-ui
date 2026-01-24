@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from "react"
 import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+
+gsap.registerPlugin(ScrollTrigger)
 
 export default function Loader({ onDone }: { onDone: () => void }) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -14,7 +17,6 @@ export default function Loader({ onDone }: { onDone: () => void }) {
     const letters = q(".loader-letter")
     const box = q(".loader-box")
     const grow = q(".growing-image")
-    const heroLetters = q(".hero-letter")
 
     const tl = gsap.timeline({
       defaults: { ease: "expo.inOut" },
@@ -46,13 +48,6 @@ export default function Loader({ onDone }: { onDone: () => void }) {
       height: "100vh",
       duration: 2
     })
-
-    tl.from(heroLetters, {
-      yPercent: 100,
-      stagger: 0.05,
-      duration: 1
-    })
-
   }, [onDone])
 
   return (

@@ -4,41 +4,63 @@ import { useRef, useState, useEffect } from "react"
 import { motion } from "framer-motion"
 
 const pipelineStages = [
-  "[BOOT] cli.main loaded",
-  "[TIER-0] Capture likelihood: 0.7, Survivability: HIGH, Likely derived: False",
-  "[TIER-0] Notes: over_smooth_motion",
-  "INFO: Created TensorFlow Lite XNNPACK delegate for CPU.",
-  "[OK] Extracted data for 1 face(s)",
-  "Using cache: MiDaS depth model",
-  "Loading ViT identity encoder",
-  "Running rPPG biological signal extraction",
-  "Evaluating micro-expressions & eye convergence",
-  "Computing temporal + compression domain metrics",
-  "Fusing forensic evidence models",
-  ">>> Verdict: FAKE",
-  ">>> P(real): 0.000"
+  { tag: "BOOT", text: "cli.main loaded" },
+  { tag: "TIER-0", text: "Capture likelihood: 0.70 | Survivability: HIGH" },
+  { tag: "TIER-0", text: "Notes: over_smooth_motion" },
+  { tag: "SYS", text: "TensorFlow Lite XNNPACK delegate initialized" },
+  { tag: "OK", text: "Detected 1 face" },
+  { tag: "MODEL", text: "Loading MiDaS depth model" },
+  { tag: "MODEL", text: "Loading ViT identity encoder" },
+  { tag: "BIO", text: "Extracting rPPG biological signals" },
+  { tag: "BEHAVIOR", text: "Analyzing micro-expressions & eye convergence" },
+  { tag: "FORENSICS", text: "Evaluating compression & temporal metrics" },
+  { tag: "FUSION", text: "Fusing forensic evidence models" },
+  { tag: "VERDICT", text: "Result: FAKE" },
+  { tag: "CONF", text: "P(real): 0.000" }
 ]
+
+const ACCEPTED_TYPES = ["video/mp4", "video/quicktime", "image/jpeg", "image/png"]
 
 export default function MediaIntake() {
   const inputRef = useRef<HTMLInputElement>(null)
   const logEndRef = useRef<HTMLDivElement>(null)
 
   const [progress, setProgress] = useState(0)
-  const [status, setStatus] = useState<string>("IDLE")
+  const [status, setStatus] = useState<"IDLE" | "RUNNING" | "COMPLETE" | "ERROR">("IDLE")
   const [analyzing, setAnalyzing] = useState(false)
   const [logs, setLogs] = useState<string[]>([])
+  const [fileName, setFileName] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [logs])
 
   const pushLog = (msg: string) => {
-    setLogs((prev) => [...prev.slice(-14), msg])
+    setLogs((prev) => [...prev.slice(-18), msg])
   }
 
-  const startAnalysis = () => {
-    if (analyzing) return
+  const reset = () => {
+    setProgress(0)
+    setLogs([])
+    setStatus("IDLE")
+    setAnalyzing(false)
+    setFileName(null)
+    setError(null)
+  }
 
+  const startAnalysis = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setError("Invalid file type. Upload MP4, MOV, JPG, or PNG.")
+      setStatus("ERROR")
+      return
+    }
+
+    setError(null)
+    setFileName(file.name)
     setAnalyzing(true)
     setProgress(0)
     setLogs([])
@@ -51,7 +73,8 @@ export default function MediaIntake() {
       p += 100 / pipelineStages.length
 
       if (step < pipelineStages.length) {
-        pushLog(pipelineStages[step])
+        const stage = pipelineStages[step]
+        pushLog(`[${stage.tag}] ${stage.text}`)
         step++
       }
 
@@ -72,11 +95,14 @@ export default function MediaIntake() {
       } else {
         setProgress(p)
       }
-    }, 550)
+    }, 600)
   }
 
   return (
-    <section className="bg-black text-white flex flex-col items-center justify-center px-10 py-32">
+    <section
+      id="media-intake"
+      className="bg-black text-white flex flex-col items-center justify-center px-10 py-32"
+    >
       <motion.h2
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -85,6 +111,11 @@ export default function MediaIntake() {
       >
         Media Verification Console
       </motion.h2>
+
+      <p className="text-gray-400 text-sm mb-8 max-w-2xl text-center">
+        Upload a video or image. The system will extract biological, identity, and compression-domain
+        signals, then fuse them into a forensic authenticity probability.
+      </p>
 
       {/* TERMINAL PANEL */}
       <div className="w-full max-w-4xl border border-gray-700 rounded-xl bg-[#050505] shadow-[0_0_50px_rgba(124,124,255,0.12)] overflow-hidden">
@@ -102,6 +133,8 @@ export default function MediaIntake() {
             className={`text-xs tracking-widest ${
               status === "RUNNING"
                 ? "text-yellow-400"
+                : status === "ERROR"
+                ? "text-red-400"
                 : "text-green-400"
             }`}
           >
@@ -123,10 +156,23 @@ export default function MediaIntake() {
             <p className="text-xs text-gray-500 mt-2">
               MP4 / MOV / JPG / PNG — MAX 50MB
             </p>
+
+            {fileName && (
+              <p className="text-xs text-indigo-400 mt-3">
+                LOADED: {fileName}
+              </p>
+            )}
           </div>
 
+          {/* ERROR */}
+          {error && (
+            <div className="text-xs text-red-400 border border-red-500/30 bg-red-500/10 p-3 rounded">
+              {error}
+            </div>
+          )}
+
           {/* STATUS BAR */}
-          {analyzing && (
+          {status !== "IDLE" && (
             <div className="space-y-3">
               <div className="flex justify-between text-xs tracking-widest">
                 <span className="text-indigo-400">
@@ -155,10 +201,12 @@ export default function MediaIntake() {
                 <div
                   key={i}
                   className={
-                    l.includes(">>> Verdict")
+                    l.includes("VERDICT")
                       ? "text-red-400"
-                      : l.includes("[TIER-0]")
+                      : l.includes("TIER-0")
                       ? "text-indigo-400"
+                      : l.includes("MODEL") || l.includes("BIO")
+                      ? "text-yellow-400"
                       : "text-gray-400"
                   }
                 >
@@ -166,6 +214,18 @@ export default function MediaIntake() {
                 </div>
               ))}
               <div ref={logEndRef} />
+            </div>
+          )}
+
+          {/* CONTROLS */}
+          {status !== "IDLE" && (
+            <div className="flex justify-end gap-4 pt-2">
+              <button
+                onClick={reset}
+                className="text-xs px-4 py-2 border border-gray-600 rounded hover:border-white hover:text-white transition"
+              >
+                RESET SESSION
+              </button>
             </div>
           )}
         </div>

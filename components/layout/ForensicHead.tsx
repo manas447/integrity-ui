@@ -1,9 +1,10 @@
 "use client"
 
 import { Canvas, useFrame } from "@react-three/fiber"
-import { useGLTF, Environment, Float, Html, Bounds } from "@react-three/drei"
-import { Suspense, useRef, useEffect } from "react"
+import { useGLTF, Environment, Float, Html } from "@react-three/drei"
+import { Suspense, useEffect, useRef } from "react"
 import * as THREE from "three"
+import { useSystemBoot } from "../system/SystemBoot"
 
 export type ForensicState = {
   rppg: { bpm: number; snr: number }
@@ -12,48 +13,52 @@ export type ForensicState = {
   verdict: "REAL" | "FAKE"
 }
 
-function HeadModel({ forensic }: { forensic: ForensicState }) {
+const SAFE_FORENSIC: ForensicState = {
+  rppg: { bpm: 70, snr: 1.5 },
+  identity: { drift: 0 },
+  depth: { valid: true, violations: 0 },
+  verdict: "REAL"
+}
+
+function HeadModel({
+  forensic,
+  onReady
+}: {
+  forensic: ForensicState
+  onReady: () => void
+}) {
   const ref = useRef<THREE.Group>(null)
   const { scene } = useGLTF("/models/head.glb")
 
   useEffect(() => {
-    // Normalize the imported model
     scene.traverse((obj: any) => {
-      if (obj.isMesh) {
-        obj.frustumCulled = false
-        obj.castShadow = true
-        obj.receiveShadow = true
+      if (obj.isMesh && obj.material) {
+        obj.material.roughness = 0.6
+        obj.material.metalness = 0.05
+        obj.material.needsUpdate = true
       }
     })
-  }, [scene])
+
+    onReady()
+  }, [scene, onReady])
 
   useFrame((state) => {
     if (!ref.current) return
 
     const t = state.clock.elapsedTime
+    const f = forensic || SAFE_FORENSIC
 
-    // Subtle forensic motion — not arcade spin
     ref.current.rotation.y = THREE.MathUtils.lerp(
       ref.current.rotation.y,
-      Math.sin(t * 0.4) * 0.3,
+      Math.sin(t * 0.4) * 0.25,
       0.05
     )
 
-    ref.current.rotation.x = THREE.MathUtils.lerp(
-      ref.current.rotation.x,
-      Math.sin(t * 0.2) * 0.1,
-      0.05
-    )
+    const pulse = 1 + Math.sin(t * (f.rppg.bpm / 60)) * 0.01
+    ref.current.scale.setScalar(0.015 * pulse)
 
-    // rPPG → subtle breathing pulse
-    const pulse =
-      1 + Math.sin(t * (forensic.rppg.bpm / 60)) * 0.01
-
-    ref.current.scale.setScalar(pulse)
-
-    // Identity drift → ghost offset
-    if (forensic.identity.drift > 7) {
-      ref.current.position.x = Math.sin(t * 6) * 0.02
+    if (f.identity.drift > 6) {
+      ref.current.position.x = Math.sin(t * 6) * 0.03
     } else {
       ref.current.position.x = THREE.MathUtils.lerp(
         ref.current.position.x,
@@ -64,10 +69,10 @@ function HeadModel({ forensic }: { forensic: ForensicState }) {
   })
 
   return (
-    <Float speed={0.5} rotationIntensity={0.05} floatIntensity={0.05}>
+    <Float speed={0.4} rotationIntensity={0.04} floatIntensity={0.04}>
       <group
         ref={ref}
-        scale={0.015}           // THIS fixes Sketchfab scale insanity
+        scale={0.015}
         position={[0, -0.6, 0]}
         rotation={[0, Math.PI, 0]}
       >
@@ -78,21 +83,19 @@ function HeadModel({ forensic }: { forensic: ForensicState }) {
 }
 
 export default function ForensicHead({
-  forensic
+  forensic = SAFE_FORENSIC
 }: {
-  forensic: ForensicState
+  forensic?: ForensicState
 }) {
+  const { markReady } = useSystemBoot()
+
   return (
     <div className="w-full h-[420px] md:h-[540px] rounded-xl overflow-hidden border border-indigo-500/30 bg-black">
-      <Canvas
-        camera={{ position: [0, 0, 2.2], fov: 35 }}
-        gl={{ antialias: true }}
-      >
+      <Canvas camera={{ position: [0, 0, 2.3], fov: 35 }}>
         <color attach="background" args={["#050505"]} />
 
         <ambientLight intensity={0.4} />
-        <directionalLight position={[4, 3, 5]} intensity={1.5} />
-        <directionalLight position={[-4, -2, -3]} intensity={0.6} />
+        <directionalLight position={[4, 4, 6]} intensity={1.4} />
 
         <Environment preset="warehouse" />
 
@@ -103,9 +106,10 @@ export default function ForensicHead({
             </Html>
           }
         >
-          <Bounds fit clip observe>
-            <HeadModel forensic={forensic} />
-          </Bounds>
+          <HeadModel
+            forensic={forensic}
+            onReady={() => markReady("gltf")}
+          />
         </Suspense>
       </Canvas>
     </div>

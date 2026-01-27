@@ -3,7 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 
 import SmoothScroll from "../components/layout/SmoothScroll"
-import Noise from "../components/layout/Noise"
+import { SystemBootProvider } from "../components/system/SystemBoot"
+import ClientShell from "../components/layout/ClientShell"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,19 +31,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Global Energy Field */}
-        <div className="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(circle_at_50%_30%,rgba(124,124,255,0.06),transparent_60%)]" />
-
-        {/* System Noise Overlay */}
-        <Noise />
-
-        {/* Camera / Scroll System */}
-        <SmoothScroll>
-  <div className="animate-fade-in">
-    {children}
-  </div>
-</SmoothScroll>
-
+        <SystemBootProvider>
+          <ClientShell>
+            <SmoothScroll>
+              {children}
+            </SmoothScroll>
+          </ClientShell>
+        </SystemBootProvider>
       </body>
     </html>
   )

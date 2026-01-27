@@ -6,42 +6,59 @@ export default function Hero() {
   return (
     <section className="relative h-screen bg-black text-white flex items-center justify-center overflow-hidden">
 
-      {/* Vignette / Depth Mask */}
-      <div className="absolute inset-0 z-[1] bg-[radial-gradient(circle_at_center,rgba(0,0,0,0)_40%,rgba(0,0,0,0.7)_100%)]" />
+      {/* Vignette */}
+      <div className="absolute inset-0 z-[1] bg-[radial-gradient(circle_at_center,rgba(0,0,0,0)_40%,rgba(0,0,0,0.75)_100%)]" />
 
-      {/* Subtle Grid */}
+      {/* Grid Motion */}
       <motion.div
-        className="absolute inset-0 z-[2] bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:60px_60px]"
+        className="absolute inset-0 z-[2] bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:60px_60px]"
         animate={{ backgroundPosition: ["0px 0px", "120px 120px"] }}
-        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
       />
 
-      {/* Foreground Content */}
+      {/* Content */}
       <motion.div
-        animate={{ y: [0, -12, 0] }}
-        transition={{
-          duration: 14,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1 }}
         className="relative z-[5] max-w-4xl text-center px-6"
       >
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-          Trust in Media Is Broken.
+        <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
+          Detect Fake Media <span className="text-indigo-400">Before It Spreads</span>
         </h1>
 
-        <p className="mt-6 text-gray-400 text-lg md:text-xl">
-          Multi-Signal Forensic Risk Assessment for Synthetic Media
+        <p className="mt-6 text-gray-300 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
+          Upload any video or image. Our system analyzes biological signals, identity drift,
+          compression artifacts, and temporal inconsistencies to estimate the probability
+          of AI-generated or manipulated media.
         </p>
 
-        <div className="mt-10 flex justify-center gap-4">
-          <button className="px-6 py-3 border border-gray-700 text-gray-300 rounded-lg hover:border-white hover:text-white transition">
-            Launch Demo
+        <div className="mt-12 flex justify-center gap-6 flex-wrap">
+          <button
+            onClick={() =>
+              document
+                .getElementById("media-intake")
+                ?.scrollIntoView({ behavior: "smooth" })
+            }
+            className="px-8 py-4 bg-indigo-500 text-black font-semibold rounded-lg hover:bg-indigo-400 transition"
+          >
+            Upload Media
           </button>
 
-          <button className="px-6 py-3 text-gray-500 hover:text-white transition">
-            View System
+          <button
+            onClick={() =>
+              document
+                .getElementById("pipeline")
+                ?.scrollIntoView({ behavior: "smooth" })
+            }
+            className="px-8 py-4 border border-gray-600 text-gray-300 rounded-lg hover:border-white hover:text-white transition"
+          >
+            See How It Works
           </button>
+        </div>
+
+        <div className="mt-10 text-xs tracking-widest text-gray-500">
+          FORENSIC ANALYSIS · SIGNAL FUSION · AUTHENTICITY PROBABILITY
         </div>
       </motion.div>
 

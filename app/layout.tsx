@@ -5,6 +5,7 @@ import "./globals.css"
 import SmoothScroll from "../components/layout/SmoothScroll"
 import { SystemBootProvider } from "../components/system/SystemBoot"
 import ClientShell from "../components/layout/ClientShell"
+import { ForensicSessionProvider } from "../components/system/ForensicSession"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,11 +33,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SystemBootProvider>
-          <ClientShell>
-            <SmoothScroll>
-              {children}
-            </SmoothScroll>
-          </ClientShell>
+          <ForensicSessionProvider>
+            <ClientShell>
+              <SmoothScroll>{children}</SmoothScroll>
+            </ClientShell>
+          </ForensicSessionProvider>
         </SystemBootProvider>
       </body>
     </html>

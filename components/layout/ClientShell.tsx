@@ -12,6 +12,10 @@ export default function ClientShell({
   const { markReady } = useSystemBoot()
 
   useEffect(() => {
+    // UI ready on mount
+    markReady("ui")
+
+    // Font readiness
     document.fonts.ready.then(() => {
       markReady("fonts")
     })

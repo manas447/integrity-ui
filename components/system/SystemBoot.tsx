@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback } from "react"
+import { createContext, useContext, useState, useCallback, useMemo } from "react"
 
 type BootFlags = {
   gltf: boolean
@@ -12,9 +12,17 @@ type BootContextType = {
   ready: BootFlags
   markReady: (key: keyof BootFlags) => void
   isSystemReady: boolean
+  progress: number
+  statusLine: string
 }
 
 const BootContext = createContext<BootContextType | null>(null)
+
+const STATUS_MAP: Record<keyof BootFlags, string> = {
+  ui: "Initializing UI Layer",
+  fonts: "Loading Typography System",
+  gltf: "Preloading 3D Forensic Model"
+}
 
 export function SystemBootProvider({
   children
@@ -29,23 +37,33 @@ export function SystemBootProvider({
 
   const markReady = useCallback((key: keyof BootFlags) => {
     setReady(prev => {
-      // CRITICAL GUARD — prevents infinite render loops
       if (prev[key]) return prev
       return { ...prev, [key]: true }
     })
   }, [])
 
-  const isSystemReady =
-    ready.gltf &&
-    ready.ui &&
-    ready.fonts
+  const progress = useMemo(() => {
+    const values = Object.values(ready)
+    const count = values.filter(Boolean).length
+    return Math.round((count / values.length) * 100)
+  }, [ready])
+
+  const statusLine = useMemo(() => {
+    const pending = Object.entries(ready).find(([, v]) => !v)
+    if (!pending) return "System Ready"
+    return STATUS_MAP[pending[0] as keyof BootFlags]
+  }, [ready])
+
+  const isSystemReady = progress === 100
 
   return (
     <BootContext.Provider
       value={{
         ready,
         markReady,
-        isSystemReady
+        isSystemReady,
+        progress,
+        statusLine
       }}
     >
       {children}

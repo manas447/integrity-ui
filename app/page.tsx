@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { useSystemBoot } from "../components/system/SystemBoot"
 import Loader from "../components/layout/Loader"
+import DriftTimeline from "../components/sections/DriftTimeline"
 
 import Hero from "../components/sections/Hero"
 import MediaIntake from "../components/sections/MediaIntake"
@@ -27,6 +28,7 @@ export default function Home() {
         <MediaIntake />
         <EvidencePipeline />
         <SystemFlow />
+        <DriftTimeline />
         <SignalDashboard />
         <RiskReveal />
       </main>

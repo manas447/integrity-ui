@@ -89,6 +89,11 @@ export default function ForensicHead({
 }) {
   const { markReady } = useSystemBoot()
 
+useEffect(() => {
+  markReady("gltf")
+}, [markReady])
+
+
   return (
     <div className="w-full h-[420px] md:h-[540px] rounded-xl overflow-hidden border border-indigo-500/30 bg-black">
       <Canvas camera={{ position: [0, 0, 2.3], fov: 35 }}>

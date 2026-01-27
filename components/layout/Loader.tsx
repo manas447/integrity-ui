@@ -6,12 +6,13 @@ import { useSystemBoot } from "../system/SystemBoot"
 
 export default function Loader() {
   const rootRef = useRef<HTMLDivElement>(null)
+  const barRef = useRef<HTMLDivElement>(null)
   const tlRef = useRef<gsap.core.Timeline | null>(null)
 
-  const { isSystemReady } = useSystemBoot()
+  const { isSystemReady, progress, statusLine } = useSystemBoot()
 
   useEffect(() => {
-    if (!rootRef.current) return
+    if (!rootRef.current || !barRef.current) return
 
     const q = gsap.utils.selector(rootRef)
     const letters = q(".loader-letter")
@@ -42,16 +43,21 @@ export default function Loader() {
   }, [])
 
   useEffect(() => {
+    if (barRef.current) {
+      barRef.current.style.width = `${progress}%`
+    }
+
     if (isSystemReady && tlRef.current) {
       tlRef.current.play()
     }
-  }, [isSystemReady])
+  }, [isSystemReady, progress])
 
   return (
     <div
       ref={rootRef}
-      className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
+      className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center gap-10"
     >
+      {/* LOGO */}
       <div className="flex items-center text-[6rem] md:text-[8rem] font-bold text-white">
         <div className="flex overflow-hidden">
           {"INT".split("").map((l, i) => (
@@ -71,6 +77,26 @@ export default function Loader() {
               {l}
             </span>
           ))}
+        </div>
+      </div>
+
+      {/* SYSTEM STATUS */}
+      <div className="w-[320px] space-y-3 text-center">
+        <div className="text-xs tracking-widest text-indigo-400">
+          {statusLine.toUpperCase()}
+        </div>
+
+        {/* PROGRESS BAR */}
+        <div className="w-full h-2 bg-gray-800 rounded overflow-hidden">
+          <div
+            ref={barRef}
+            className="h-full bg-indigo-500 transition-all duration-500"
+            style={{ width: "0%" }}
+          />
+        </div>
+
+        <div className="text-xs text-gray-400 tracking-widest">
+          {progress}% COMPLETE
         </div>
       </div>
     </div>

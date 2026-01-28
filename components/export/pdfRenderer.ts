@@ -1,86 +1,119 @@
 import jsPDF from "jspdf"
-import type { ForensicReport } from "./types"
+import type { ForensicReport } from "../api/types"
 
-/**
- * Force this renderer to only accept a SIGNED report,
- * even if ForensicReport typing drifts elsewhere.
- */
-type SignedReport = ForensicReport & {
-  integrity: {
-    reportHash: string
-    signature: {
-      algorithm: string
-      signature: string
-      publicKey: string
-      signedAt: string
-    }
-  }
-}
-
-export async function renderPDF(report: SignedReport) {
+export async function renderPDF(
+  report: ForensicReport
+) {
   const doc = new jsPDF()
   let y = 15
 
-  const { reportHash, signature } = report.integrity
-
+  // HEADER
   doc.setFontSize(16)
   doc.text("Forensic Media Integrity Report", 10, y)
   y += 10
 
+  // META
   doc.setFontSize(10)
   doc.text(`Session ID: ${report.sessionId}`, 10, y)
-  y += 7
+  y += 6
 
   doc.text(`Timestamp: ${report.timestamp}`, 10, y)
-  y += 7
+  y += 10
 
-  doc.text(`Verdict: ${report.verdict.result}`, 10, y)
-  y += 7
+  // VERDICT
+  doc.setFontSize(12)
+  doc.text("Verdict", 10, y)
+  y += 6
+
+  doc.setFontSize(10)
+  doc.text(`Result: ${report.verdict.result}`, 12, y)
+  y += 6
 
   doc.text(
     `System Confidence: ${report.verdict.systemConfidence}%`,
-    10,
+    12,
     y
   )
-  y += 7
+  y += 6
 
   doc.text(
-    `Probability Real: ${report.verdict.probabilityReal.toFixed(3)}`,
-    10,
+    `Probability Real: ${report.verdict.probabilityReal}`,
+    12,
     y
   )
-  y += 12
-
-  doc.text("Risk Drivers:", 10, y)
-  y += 6
-
-  report.riskDrivers.forEach((r: string, i: number) => {
-    doc.text(`- ${r}`, 12, y + i * 6)
-  })
-
-  y += report.riskDrivers.length * 6 + 10
-
-  doc.text("Integrity:", 10, y)
-  y += 6
-
-  doc.text("Hash (SHA-256):", 12, y)
-  y += 6
-  doc.text(reportHash, 12, y, { maxWidth: 180 })
   y += 10
 
+  // TIER 0
+  doc.setFontSize(12)
+  doc.text("Tier-0 Capture Metrics", 10, y)
+  y += 6
+
+  doc.setFontSize(10)
   doc.text(
-    `Signature (${signature.algorithm}):`,
+    `Likelihood: ${report.tier0.captureLikelihood}`,
     12,
     y
   )
   y += 6
 
   doc.text(
-    signature.signature.slice(0, 64) + "...",
+    `Survivability: ${report.tier0.survivability}`,
     12,
-    y,
-    { maxWidth: 180 }
+    y
+  )
+  y += 6
+
+  doc.text(
+    `Derived: ${report.tier0.derived}`,
+    12,
+    y
+  )
+  y += 6
+
+  doc.text(
+    `Notes: ${report.tier0.notes}`,
+    12,
+    y
+  )
+  y += 10
+
+  // RISK DRIVERS
+  doc.setFontSize(12)
+  doc.text("Primary Risk Drivers", 10, y)
+  y += 6
+
+  doc.setFontSize(10)
+  report.riskDrivers.forEach(risk => {
+    doc.text(`- ${risk}`, 12, y)
+    y += 6
+  })
+
+  y += 8
+
+  // SYSTEM
+  doc.setFontSize(12)
+  doc.text("System Information", 10, y)
+  y += 6
+
+  doc.setFontSize(10)
+  doc.text(`Version: ${report.system.version}`, 12, y)
+  y += 6
+
+  doc.text(
+    `Environment: ${report.system.environment}`,
+    12,
+    y
+  )
+  y += 6
+
+  doc.text(
+    `Models: ${report.system.modelStack.join(", ")}`,
+    12,
+    y
   )
 
-  doc.save(`forensic-report-${report.sessionId}.pdf`)
+  // SAVE
+  doc.save(
+    `forensic-report-${report.sessionId}.pdf`
+  )
 }

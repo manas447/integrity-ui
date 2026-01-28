@@ -3,112 +3,68 @@
 import {
   createContext,
   useContext,
-  useState,
-  useCallback,
-  useMemo,
-  ReactNode
+  useEffect,
+  useState
 } from "react"
+import type { ForensicState } from "../api/types"
+import { getLiveState } from "../api/forensicClient"
 
-import type { ForensicState } from "../layout/ForensicHead"
-import type { ForensicReport } from "../export/types"
-import { buildReport as buildReportInternal } from "../export/buildReport"
-
-/* ======================
-   TYPES
-====================== */
-
-type ForensicSessionContextType = {
-  forensic: ForensicState
-  filename: string | null
-
-  updateForensic: (next: ForensicState) => void
-  setFilename: (name: string | null) => void
-
-  buildReport: () => Promise<ForensicReport>
+type Ctx = {
+  sessionId: string | null
+  forensic: ForensicState | null
+  startSession: (id: string) => void
 }
 
-/* ======================
-   DEFAULT STATE
-====================== */
-
-const DEFAULT_FORENSIC: ForensicState = {
-  rppg: {
-    bpm: 72,
-    snr: 1.4
-  },
-  identity: {
-    drift: 2.5
-  },
-  depth: {
-    valid: true,
-    violations: 0
-  },
-  verdict: "REAL"
-}
-
-/* ======================
-   CONTEXT
-====================== */
-
-const ForensicSessionContext =
-  createContext<ForensicSessionContextType | null>(null)
-
-/* ======================
-   PROVIDER
-====================== */
+const ForensicContext = createContext<Ctx | null>(null)
 
 export function ForensicSessionProvider({
   children
 }: {
-  children: ReactNode
+  children: React.ReactNode
 }) {
-  const [forensic, setForensic] =
-    useState<ForensicState>(DEFAULT_FORENSIC)
-
-  const [filename, setFilename] =
+  const [sessionId, setSessionId] =
     useState<string | null>(null)
 
-  const updateForensic = useCallback(
-    (next: ForensicState) => {
-      setForensic(next)
-    },
-    []
-  )
+  const [forensic, setForensic] =
+    useState<ForensicState | null>(null)
 
-  const buildReport = useCallback(async () => {
-    return await buildReportInternal(forensic, filename)
-  }, [forensic, filename])
+  const startSession = (id: string) => {
+    setSessionId(id)
+    setForensic(null)
+  }
 
-  const value = useMemo(
-    () => ({
-      forensic,
-      filename,
-      updateForensic,
-      setFilename,
-      buildReport
-    }),
-    [forensic, filename, updateForensic, buildReport]
-  )
+  useEffect(() => {
+    if (!sessionId) return
+
+    const poll = setInterval(async () => {
+      try {
+        const state = await getLiveState(sessionId)
+        setForensic(state)
+      } catch {}
+    }, 1200)
+
+    return () => clearInterval(poll)
+  }, [sessionId])
 
   return (
-    <ForensicSessionContext.Provider value={value}>
+    <ForensicContext.Provider
+      value={{
+        sessionId,
+        forensic,
+        startSession
+      }}
+    >
       {children}
-    </ForensicSessionContext.Provider>
+    </ForensicContext.Provider>
   )
 }
 
-/* ======================
-   HOOK
-====================== */
-
 export function useForensicSession() {
-  const ctx = useContext(ForensicSessionContext)
-
+  const ctx = useContext(ForensicContext)
   if (!ctx) {
     throw new Error(
       "useForensicSession must be used inside ForensicSessionProvider"
     )
   }
-
   return ctx
 }

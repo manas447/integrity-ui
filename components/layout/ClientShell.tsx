@@ -1,31 +1,61 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import SystemHUD from "./SystemHUD"
+import Loader from "./Loader"
 import Noise from "./Noise"
-import { useSystemBoot } from "../system/SystemBoot"
+import { WSClient } from "../system/wsClient"
+
+/* ======================
+   WS SINGLETON
+   (Frontend only — backend controlled)
+====================== */
+
+const ws =
+  typeof window !== "undefined"
+    ? new WSClient("ws://localhost:8000/ws")
+    : null
 
 export default function ClientShell({
   children
 }: {
   children: React.ReactNode
 }) {
-  const { markReady } = useSystemBoot()
+  const [mounted, setMounted] = useState(false)
+
+  /* ======================
+     MOUNT GUARD
+  ====================== */
 
   useEffect(() => {
-    // UI ready on mount
-    markReady("ui")
+    setMounted(true)
+  }, [])
 
-    // Font readiness
-    document.fonts.ready.then(() => {
-      markReady("fonts")
-    })
-  }, [markReady])
+  /* ======================
+     BACKEND CONNECTOR
+     (No fake logic — real only)
+  ====================== */
+
+  useEffect(() => {
+    if (!mounted || !ws) return
+
+    ws.connect()
+    return () => ws.disconnect()
+  }, [mounted])
+
+  if (!mounted) return null
 
   return (
     <>
-      <div className="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(circle_at_50%_30%,rgba(124,124,255,0.06),transparent_60%)]" />
+      {/* Global UI Layers */}
+      <SystemHUD />
+      <Loader />
       <Noise />
-      {children}
+
+      {/* App Content */}
+      <main className="relative z-10 min-h-screen">
+        {children}
+      </main>
     </>
   )
 }

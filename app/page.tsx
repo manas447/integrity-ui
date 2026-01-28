@@ -1,16 +1,14 @@
- "use client"
+"use client"
 
 import { useEffect } from "react"
 import { useSystemBoot } from "../components/system/SystemBoot"
 import Loader from "../components/layout/Loader"
-import DriftTimeline from "../components/sections/DriftTimeline"
 
 import Hero from "../components/sections/Hero"
 import MediaIntake from "../components/sections/MediaIntake"
-import EvidencePipeline from "../components/sections/EvidencePipeline"
 import SystemFlow from "../components/sections/SystemFlow"
-import SignalDashboard from "../components/sections/SignalDashboard"
 import RiskReveal from "../components/sections/RiskReveal"
+import ExportPanel from "../components/export/ExportPanel"
 
 export default function Home() {
   const { markReady } = useSystemBoot()
@@ -26,11 +24,9 @@ export default function Home() {
       <main>
         <Hero />
         <MediaIntake />
-        <EvidencePipeline />
         <SystemFlow />
-        <DriftTimeline />
-        <SignalDashboard />
         <RiskReveal />
+        <ExportPanel />
       </main>
     </>
   )

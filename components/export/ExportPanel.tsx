@@ -1,12 +1,19 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { useForensicSession } from "../system/ForensicSession"
+import { getReport } from "../api/forensicClient"
 
 export default function ExportPanel() {
-  const { buildReport } = useForensicSession()
+  const { sessionId } = useForensicSession()
 
-  const downloadJSON = async () => {
-    const report = await buildReport()
+  const download = async () => {
+    if (!sessionId) {
+      alert("No session active")
+      return
+    }
+
+    const report = await getReport(sessionId)
 
     const blob = new Blob(
       [JSON.stringify(report, null, 2)],
@@ -15,34 +22,22 @@ export default function ExportPanel() {
 
     const link = document.createElement("a")
     link.href = URL.createObjectURL(blob)
-    link.download = `forensic-session-${report.sessionId}.json`
+    link.download = `forensic-${sessionId}.json`
     link.click()
   }
 
-  const downloadPDF = async () => {
-    const report = await buildReport()
-
-    // CLIENT-ONLY LOAD
-    const { renderPDF } = await import("./pdfRenderer")
-
-    await renderPDF(report)
-  }
-
   return (
-    <div className="flex gap-4 mt-8 justify-center">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      className="flex justify-center py-20"
+    >
       <button
-        onClick={downloadJSON}
-        className="px-6 py-3 bg-indigo-500 text-black rounded-lg hover:bg-indigo-400 transition"
+        onClick={download}
+        className="px-8 py-3 bg-indigo-500 text-black rounded-lg hover:bg-indigo-400 transition"
       >
-        Download JSON
+        Download Forensic Report
       </button>
-
-      <button
-        onClick={downloadPDF}
-        className="px-6 py-3 border border-gray-600 rounded-lg text-gray-300 hover:border-white hover:text-white transition"
-      >
-        Download PDF
-      </button>
-    </div>
+    </motion.div>
   )
 }

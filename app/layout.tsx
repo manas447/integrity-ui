@@ -2,10 +2,9 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 
-import SmoothScroll from "../components/layout/SmoothScroll"
 import { SystemBootProvider } from "../components/system/SystemBoot"
-import ClientShell from "../components/layout/ClientShell"
 import { ForensicSessionProvider } from "../components/system/ForensicSession"
+import ClientShell from "../components/layout/ClientShell"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,10 +31,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* GLOBAL SYSTEM LAYERS */}
         <SystemBootProvider>
           <ForensicSessionProvider>
             <ClientShell>
-              <SmoothScroll>{children}</SmoothScroll>
+              {children}
             </ClientShell>
           </ForensicSessionProvider>
         </SystemBootProvider>
